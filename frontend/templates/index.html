@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ContentBoost AI — Product Optimization Engine</title>
+  <meta name="description"
+    content="AI-powered e-commerce product description optimizer with SEO scoring, competitor analysis, and version history." />
+  <!-- DOMPurify — XSS sanitisation for all LLM output -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="22" height="22" rx="6" fill="#1a1a1a" />
+          <path d="M5.5 7h11M5.5 11h8M5.5 15h9.5" stroke="white" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+        <span class="logo-text">ContentBoost AI</span>
+        <span class="logo-badge">v3.0</span>
+      </div>
+      <div class="header-actions">
+        <span id="auth-status" class="status-label" style="margin-right: 15px; cursor: pointer;"
+          onclick="UI.toggleAuthModal()">Login / Register</span>
+        <span id="status-indicator" class="status-dot idle"></span>
+        <span id="status-text" class="status-label">Ready</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Auth Modal ─────────────────────────────────────────────────────── -->
+  <div id="auth-modal" class="modal"
+    style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
+    <div
+      style="background:var(--c-bg-2); padding:30px; border-radius:12px; border:1px solid var(--c-border); width:300px; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+      <h2 style="margin:0 0 20px 0; font-size:18px">Authentication</h2>
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="auth-user" style="width:100%" />
+      </div>
+      <div class="field" style="margin-top:15px">
+        <label>Password</label>
+        <input type="password" id="auth-pass" style="width:100%" />
+      </div>
+      <div style="display:flex; gap:10px; margin-top:20px">
+        <button class="btn btn-primary" onclick="UI.login()" style="flex:1">Login</button>
+        <button class="btn btn-secondary" onclick="UI.register()" style="flex:1">Register</button>
+      </div>
+      <div style="text-align:center; margin-top:15px">
+        <a href="#" onclick="UI.toggleAuthModal()"
+          style="color:var(--c-text-2); font-size:12px; text-decoration:none">Cancel</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Layout ─────────────────────────────────────────────────────────── -->
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="section-label">Product details</div>
+
+        <div class="field">
+          <label for="inp-name">Product name <span class="required">*</span></label>
+          <input type="text" id="inp-name" placeholder="e.g. Wireless Noise-Cancelling Headphones" maxlength="200" />
+        </div>
+
+        <div class="field">
+          <label for="inp-cat">Category</label>
+          <select id="inp-cat">
+            <option value="">— select category —</option>
+            <option>Electronics</option>
+            <option>Clothing &amp; Apparel</option>
+            <option>Home &amp; Garden</option>
+            <option>Sports &amp; Outdoors</option>
+            <option>Beauty &amp; Personal Care</option>
+            <option>Kitchen &amp; Dining</option>
+            <option>Books &amp; Media</option>
+            <option>Toys &amp; Games</option>
+            <option>Health &amp; Wellness</option>
+            <option>Software &amp; Digital</option>
+            <option>Food &amp; Beverage</option>
+            <option>B2B &amp; Industrial</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="inp-desc">Existing description</label>
+          <textarea id="inp-desc" rows="4" maxlength="5000"
+            placeholder="Paste your current product description here (optional)…"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="inp-audience">Target audience</label>
+          <input type="text" id="inp-audience" placeholder="e.g. young professionals, gamers…" maxlength="300" />
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">Writing tone</div>
+        <div class="tone-selector" id="tone-selector">
+          <button class="tone-btn active" data-tone="persuasive">Persuasive</button>
+          <button class="tone-btn" data-tone="formal">Formal</button>
+          <button class="tone-btn" data-tone="casual">Casual</button>
+          <button class="tone-btn" data-tone="technical">Technical</button>
+          <button class="tone-btn" data-tone="luxury">Luxury</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">Competitor analysis</div>
+
+        <!-- URL scraper (new) -->
+        <div class="field">
+          <label for="inp-comp-url">Competitor URL <span
+              style="font-size:11px;color:var(--c-text-3)">(optional)</span></label>
+          <div class="input-row">
+            <input type="url" id="inp-comp-url" placeholder="https://competitor.com/product-page" />
+            <button class="btn btn-xs" id="btn-scrape" onclick="App.runScrape()">Scrape URL</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="inp-comp">Competitor description</label>
+          <textarea id="inp-comp" rows="3" maxlength="5000"
+            placeholder="Paste a competitor's description, or use Scrape URL above…"></textarea>
+        </div>
+      </div>
+
+      <div class="sidebar-actions">
+        <button class="btn btn-primary" id="btn-generate">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+          Generate descriptions
+        </button>
+        <button class="btn btn-secondary" id="btn-analyze">Analyze only</button>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-ghost btn-sm" id="btn-demo">Load demo</button>
+        <button class="btn btn-ghost btn-sm" id="btn-clear">Clear all</button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+      <!-- Tabs -->
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-panel="results" role="tab">Results</button>
+        <button class="tab" data-panel="seo" role="tab">SEO Analysis</button>
+        <button class="tab" data-panel="compare" role="tab">Compare</button>
+        <button class="tab" data-panel="history" role="tab">History</button>
+      </div>
+
+      <!-- Results panel -->
+      <div class="panel active" id="panel-results" role="tabpanel">
+        <div id="results-area">
+          <div class="empty-state">
+            <div class="empty-icon">✦</div>
+            <div class="empty-title">No results yet</div>
+            <div class="empty-body">Fill in your product details and click "Generate descriptions" to get AI-optimized
+              content.</div>
+            <button class="btn btn-secondary" id="btn-demo-empty">Load demo product</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEO panel -->
+      <div class="panel" id="panel-seo" role="tabpanel">
+        <div id="seo-area">
+          <div class="empty-state">
+            <div class="empty-icon">◎</div>
+            <div class="empty-title">No SEO analysis yet</div>
+            <div class="empty-body">Generate descriptions first to see detailed SEO metrics and improvement suggestions.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compare panel -->
+      <div class="panel" id="panel-compare" role="tabpanel">
+        <div id="compare-area">
+          <div class="empty-state">
+            <div class="empty-icon">⊞</div>
+            <div class="empty-title">Nothing to compare</div>
+            <div class="empty-body">Generate at least two versions to compare them side by side.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History panel -->
+      <div class="panel" id="panel-history" role="tabpanel">
+        <div id="history-area">
+          <div class="empty-state">
+            <div class="empty-icon">◷</div>
+            <div class="empty-title">No history yet</div>
+            <div class="empty-body">Each generation is automatically saved here for iterative improvement tracking.
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── Toast ──────────────────────────────────────────────────────────── -->
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/ui.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+# ContentBoost AI — Python dependencies
+
+# Web framework
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+
+# LLM
+google-generativeai==0.8.3
+
+# Config
+python-dotenv==1.0.1
+
+# Data validation
+pydantic==2.7.1
+
+# SEO scoring
+textstat==0.7.3
+
+# HTTP client (scraping + internal)
+httpx==0.27.0
+
+# File uploads
+python-multipart==0.0.9
+
+# Async file I/O
+aiofiles==23.2.1
+
+# ── v2.0 Dependencies ─────────────────────────────────────────────────────────
+
+# Async SQLite (replaces JSON flat-file store)
+aiosqlite==0.20.0
+
+# Rate limiting for FastAPI
+slowapi==0.1.9
+
+# Competitor URL scraping
+beautifulsoup4==4.12.3
+lxml==5.2.2
+
+# LLM retry with exponential backoff
+tenacity==8.3.0
+
+# ── v3.0 Dependencies ─────────────────────────────────────────────────────────
+
+nltk==3.8.1
+passlib[bcrypt]==1.7.4
+bcrypt==3.2.2
+python-jose[cryptography]==3.3.0
+loguru==0.7.2
